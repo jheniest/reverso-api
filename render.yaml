@@ -5,10 +5,14 @@ services:
     name: reverso-api
     env: node
     plan: free
-    buildCommand: npm install
+    buildCommand: npm install --production
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         fromService: true
+    scaling:
+      minInstances: 1
+      maxInstances: 1

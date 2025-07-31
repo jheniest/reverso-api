@@ -1,13 +1,22 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const Reverso = require('./src/reverso');
 
+// Initialize Express app first
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Initialize Reverso
-const reverso = new Reverso();
+// Try to initialize Reverso with error handling
+let reverso;
+try {
+    const Reverso = require('./src/reverso');
+    reverso = new Reverso();
+    console.log('✅ Reverso module loaded successfully');
+} catch (error) {
+    console.error('❌ Error loading Reverso module:', error.message);
+    console.error('Stack trace:', error.stack);
+    process.exit(1);
+}
 
 // Middleware
 app.use(helmet());
@@ -137,6 +146,18 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        version: process.version
+    });
+});
+
+// 404 handler
 app.use('*', (req, res) => {
     res.status(404).json({
         error: 'Endpoint not found',
@@ -151,10 +172,40 @@ app.use('*', (req, res) => {
     });
 });
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    });
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    process.exit(1);
+});
+
 // Start server
-app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0', () => {
     console.log(`🚀 Reverso API Server running on port ${port}`);
     console.log(`📖 API Documentation: http://localhost:${port}/`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    server.close(() => {
+        console.log('Process terminated');
+    });
 });
 
 module.exports = app;
