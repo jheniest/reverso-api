@@ -1,24 +1,6 @@
 {
-  "version": 2,
-  "name": "reverso-api",
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  },
-  "functions": {
-    "server.js": {
-      "maxDuration": 30
-    }
-  }
+  "rewrites": [
+    { "source": "/api/translate", "destination": "/api/translate.js" },
+    { "source": "/(.*)", "destination": "/api/index.js" }
+  ]
 }
