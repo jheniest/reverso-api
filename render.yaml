@@ -1,0 +1,14 @@
+version: "1"
+
+services:
+  - type: web
+    name: reverso-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService: true

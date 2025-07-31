@@ -6,8 +6,9 @@
     "homepage": "https://github.com/s0ftik3/reverso-api#readme",
     "repository": "https://github.com/s0ftik3/reverso-api",
     "scripts": {
-        "start": "node index.js",
-        "test": "node example/app.js",
+        "start": "node server.js",
+        "dev": "node server.js",
+        "test": "node test_en_pt.js",
         "prettier": "npx prettier --write ."
     },
     "keywords": [
@@ -22,9 +23,15 @@
     "license": "MIT",
     "dependencies": {
         "cheerio": "^1.0.0-rc.5",
+        "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "helmet": "^8.1.0",
         "random-useragent": "^0.5.0"
     },
     "devDependencies": {
         "prettier": "^2.7.1"
+    },
+    "engines": {
+        "node": ">=18.0.0"
     }
 }
