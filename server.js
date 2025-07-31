@@ -129,25 +129,6 @@ app.get('/api/synonyms', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime()
-    });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        error: 'Something went wrong!',
-        message: err.message
-    });
-});
-
-// 404 handler
-// Health check endpoint
-app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
@@ -184,28 +165,36 @@ app.use((err, req, res, next) => {
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
-    process.exit(1);
+    // Don't exit in serverless environment
+    if (process.env.NODE_ENV !== 'production') {
+        process.exit(1);
+    }
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    process.exit(1);
+    // Don't exit in serverless environment
+    if (process.env.NODE_ENV !== 'production') {
+        process.exit(1);
+    }
 });
 
-// Start server
-const server = app.listen(port, '0.0.0.0', () => {
-    console.log(`🚀 Reverso API Server running on port ${port}`);
-    console.log(`📖 API Documentation: http://localhost:${port}/`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully');
-    server.close(() => {
-        console.log('Process terminated');
+// Start server only if not in serverless environment (like Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    const server = app.listen(port, '0.0.0.0', () => {
+        console.log(`🚀 Reverso API Server running on port ${port}`);
+        console.log(`📖 API Documentation: http://localhost:${port}/`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
-});
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+        console.log('SIGTERM received, shutting down gracefully');
+        server.close(() => {
+            console.log('Process terminated');
+        });
+    });
+}
 
 module.exports = app;
