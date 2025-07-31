@@ -21,11 +21,11 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { text, from, to } = req.query;
+    const { text, lang } = req.query;
     
-    if (!text || !from || !to) {
+    if (!text || !lang) {
         return res.status(400).json({
-            error: 'Missing required parameters: text, from, to'
+            error: 'Missing required parameters: text, lang'
         });
     }
 
@@ -36,29 +36,18 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-        reverso.getTranslation(text, from, to, (err, response) => {
+        reverso.getSynonyms(text, lang, (err, response) => {
             if (err) {
-                console.error('Translation error:', err);
                 return res.status(500).json({
-                    error: 'Translation failed',
+                    error: 'Synonyms retrieval failed',
                     message: err.message
                 });
             }
-            
-            if (!response || !response.ok) {
-                console.error('Invalid translation response:', response);
-                return res.status(500).json({
-                    error: 'Translation failed',
-                    message: 'Invalid response from translation service'
-                });
-            }
-            
             res.json(response);
         });
     } catch (error) {
-        console.error('Translation catch error:', error);
         res.status(500).json({
-            error: 'Translation failed',
+            error: 'Synonyms retrieval failed',
             message: error.message
         });
     }
